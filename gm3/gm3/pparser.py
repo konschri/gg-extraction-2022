@@ -48,41 +48,51 @@ class IssueParser:
         self.lines = []
         tmp_lines = []
 
-        if not stdin:
-            filetype = mimetypes.guess_type(filename)[0]
+        # if not stdin:
+        #     filetype = mimetypes.guess_type(filename)[0]
 
-            # if it is in PDF format convert it to txt
-            if filetype == 'application/pdf':
-                outfile = filename.replace('.pdf', '.txt')
-                if not os.path.isfile(outfile):
-                    os.system('pdfminer.six/tools/pdf2txt.py {} --output-dir {}'.format(filename, outfile))
-                filename = outfile
-            elif filetype != 'text/plain':
-                raise UnrecognizedFileException(filename)
+        #     # if it is in PDF format convert it to txt
+        #     if filetype == 'application/pdf':
+        #         outfile = filename.replace('.pdf', '.txt')
+        #         if not os.path.isfile(outfile):
+        #             os.system('pdfminer.six/tools/pdf2txt.py {} --output-dir {}'.format(filename, outfile))
+        #         filename = outfile
+        #     elif filetype != 'text/plain':
+        #         raise UnrecognizedFileException(filename)
+        
+        with open(filename, 'r', encoding='utf-8') as f:
+            while True:
+                l = f.readline()
+                if not l:
+                    break
+                l = l.replace('−\n', '')
+                l = l.replace('-\n', '')
+                # l = l.replace('\n', ' ')
+                l = re.sub(r' +', ' ', l)
+                l = helpers.fix_par_abbrev(l)
+                tmp_lines.append(l)
+            
+        # if not stdin:
+        #     infile = open(filename, 'r', encoding='utf8')
 
-        if not stdin:
-            infile = open(filename, 'r', encoding='utf8')
+        # #remove ugly hyphenthation
+        # while True:
+        #     if not stdin:
+        #         l = infile.readline()
+        #     else:
+        #         l = sys.stdin.readline()
+        #     if not l:
+        #         break
+        #     l = l.replace('−\n', '')
+        #     l = l.replace('-\n', '')
+        #     # l = l.replace('\n', ' ')
+        #     l = re.sub(r' +', ' ', l)
+        #     l = helpers.fix_par_abbrev(l)
+        #     tmp_lines.append(l)
 
-
-
-        # remove ugly hyphenthation
-        while True:
-            if not stdin:
-                l = infile.readline()
-            else:
-                l = sys.stdin.readline()
-            if not l:
-                break
-            l = l.replace('−\n', '')
-            l = l.replace('-\n', '')
-            l = l.replace('\n', ' ')
-            l = re.sub(r' +', ' ', l)
-            l = helpers.fix_par_abbrev(l)
-            tmp_lines.append(l)
-
-        if not stdin:
-            infile.close()
-
+        # if not stdin:
+        #     infile.close()
+        
         for line in tmp_lines:
             # gg22 consider add this to escape the situation when ΕΦΗΜΕΡΙ∆Α TΗΣ ΚΥΒΕΡΝΗΣΕΩΣ is wrongly located on the end of a page
             # if line.endswith('ΕΦΗΜΕΡΙ∆Α TΗΣ ΚΥΒΕΡΝΗΣΕΩΣ'): line.replace('ΕΦΗΜΕΡΙ∆Α TΗΣ ΚΥΒΕΡΝΗΣΕΩΣ', '')
@@ -108,6 +118,7 @@ class IssueParser:
         self.find_dates()
         self.articles = {}
         self.articles_as_paragraphs = {}
+        self.digitmatches = [] #gg22
         if not stdin:
             self.name = filename.replace('.pdf', '')
         else:
@@ -253,16 +264,25 @@ class IssueParser:
                                  [0] + 1: article_indices[j + 1][0]]
             paragraphs = collections.defaultdict(list)
             current = '0'
+            
+            # for t in content:
+            #     x = re.search(r'\d+.', t) 
+            #     if x and x.span() in [(0, 2), (0, 3)]: # cosinder add (0, 4) for cases such as 101. if you face any
+            #         current = x.group().strip('.')
+            #         self.digitmatches.append(x.group())
+            #     paragraphs[current].append(t.strip())
+            
             for t in content:
-                x = re.search(r'\d+.', t)
-                if x and x.span() in [(0, 2), (0, 3)]:
-                    current = x.group().strip('.')
-                paragraphs[current].append(t)
+                x = re.match(r'^\d{1,2}[α-ωΑ-Ω]{,2}[).]', t.lstrip()[:7]) #x = re.match(r'^\d+\.|^\d+\D+\)|^\d+\)|^\d+\D+\.', t.lstrip()[:6])
+                if x:
+                    current = re.sub("[^0-9]", "", x.group())
+                    self.digitmatches.append(x.group())
+                paragraphs[current].append(t.lstrip())
 
             sentences = {}
 
             for par in paragraphs.keys():
-                val = ''.join(paragraphs[par])[1:]
+                val = ''.join(paragraphs[par])[0:]
                 paragraphs[par] = val
                 sentences[par] = list(
                     filter(
