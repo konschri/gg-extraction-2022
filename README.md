@@ -4,14 +4,11 @@
 ---
 
 <h3 align="center">GG-Extraction-2022</h3>
-NOTE: THIS REPO IS UNDER CONSTRUCTION SOME ATTRIBUTES MAY NOT BE FULLY FUNCTIONAL
 
 ## 📝 Table of Contents
 - [Problem Definition](#problem_statement)
 - [Setting up a local environment](#getting_started)
 - [Usage](#usage)
-- [Future Scope](#future_scope)
-- [Contributing](../CONTRIBUTING.md)
 - [Authors](#authors)
 - [Acknowledgments](#acknowledgments)
 
@@ -69,9 +66,6 @@ paragraphs = FPRS.find_article_paragraphs(text)
 python amendments_detector.py --filepath https://www.kodiko.gr/nomothesia/document/308558 --email example@example.com --password --br firefox
 ```
 
-## 🚀 Future Scope <a name = "future_scope"></a>
-
-...add text
 
 ## ✍️ Authors <a name = "authors"></a>
 - [@Ioannis Konstantinidis](https://github.com/ikonstas-ds)  
@@ -80,12 +74,8 @@ python amendments_detector.py --filepath https://www.kodiko.gr/nomothesia/docume
 - [@Alexandros Michailidis](https://github.com/michailidisa)
 
 
-See also the list of [contributors](https://github.com/dorg-ihu/gg-extraction-2022/graphs/contributors) 
-who participated in this project.
-
 ## 🎉 Acknowledgments <a name = "acknowledgments"></a>
 We are really grateful on the authors of the following tools:
 - ![gsoc2018-GG-extraction](https://github.com/eellak/gsoc2018-GG-extraction)
 - ![gsoc2018-3gm](https://github.com/eellak/gsoc2018-3gm)
 
-on which we relied on ... +text
